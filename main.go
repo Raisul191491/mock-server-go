@@ -2,6 +2,8 @@ package main
 
 import (
 	"fmt"
+	"os"
+	"sync"
 	"time"
 )
 
@@ -12,15 +14,17 @@ func fibonacci(n int) int {
 	return fibonacci(n-1) + fibonacci(n-2)
 }
 
-func fibonacciHandler(val int) {
-	start := time.Now() // Record the start time
+func fibonacciHandler(val int, file *os.File) {
+	start := time.Now()
 
 	result := fibonacci(val)
 
-	elapsed := time.Since(start) // Calculate the elapsed time
+	elapsed := time.Since(start)
 
-	fmt.Println("The ans is for %d is : ", result)
-	fmt.Println("latency :%v", elapsed)
+	output := fmt.Sprintf("The ans for %d is: %d\n", val, result)
+	output += fmt.Sprintf("Latency: %v\n\n", elapsed)
+
+	file.WriteString(output)
 }
 
 // func ping() {
@@ -37,7 +41,7 @@ func fibonacciHandler(val int) {
 // }
 
 // func generateGraph() {
-// 	start := time.Now() // Record the start time
+// 	start := time.Now()
 
 // 	numStr := c.Param("nodes")
 // 	num, err := strconv.Atoi(numStr)
@@ -71,10 +75,28 @@ func fibonacciHandler(val int) {
 // }
 
 func main() {
-	testArr := []int{30, 45, 47, 50}
-	for _, val := range testArr {
-		fibonacci(val)
+	file, err := os.Create("fibonacci_performance_output.txt")
+	if err != nil {
+		fmt.Println("Error creating file:", err)
+		return
 	}
+	defer file.Close()
+
+	testArr := []int{46, 47, 48, 50}
+
+	var wg sync.WaitGroup
+
+	for _, val := range testArr {
+		wg.Add(1)
+		go func(num int, file *os.File) {
+			defer wg.Done()
+			fibonacciHandler(num, file)
+			fmt.Println(" ")
+		}(val, file)
+	}
+
+	wg.Wait()
+	fmt.Println("All goroutines finished. Output written to fibonacci_output.txt.")
 	// r := gin.Default()
 
 	// r.GET("/fibonacci/:number", fibonacciHandler)

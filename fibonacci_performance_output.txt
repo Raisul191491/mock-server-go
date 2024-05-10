@@ -1,0 +1,9 @@
+The ans for 46 is: 1836311903
+Latency: 9.628866824s
+
+The ans for 47 is: 2971215073
+Latency: 15.462845833s
+
+The ans for 48 is: 4807526976
+Latency: 24.476048775s
+
